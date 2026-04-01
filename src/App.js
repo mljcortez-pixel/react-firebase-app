@@ -138,14 +138,15 @@ function App() {
     }
   };
 
-  // Update filters when search, tag, or folder changes
-  useEffect(() => {
-    filterNotes(notes, searchTerm, selectedTag, selectedFolder);
-  }, [searchTerm, selectedTag, selectedFolder, notes]);
-
+  // Fetch notes on component mount only (runs once)
   useEffect(() => {
     fetchNotes();
   }, []);
+
+  // Update filters when search, tag, folder, or notes change
+  useEffect(() => {
+    filterNotes(notes, searchTerm, selectedTag, selectedFolder);
+  }, [searchTerm, selectedTag, selectedFolder, notes]);
 
   return (
     <div className="app">
