@@ -40,20 +40,24 @@ function App() {
   const filterNotes = (notesData, search, tag, folder) => {
     let filtered = notesData;
     
+    // Filter by search term
     if (search) {
       filtered = filtered.filter(note => 
         note.text.toLowerCase().includes(search.toLowerCase())
       );
     }
     
+    // Filter by tag
     if (tag && tag !== "All") {
       filtered = filtered.filter(note => note.tags.includes(tag));
     }
     
+    // Filter by folder
     if (folder && folder !== "All") {
       filtered = filtered.filter(note => note.folder === folder);
     }
     
+    // Sort: pinned notes first, then by creation date (newest first)
     filtered.sort((a, b) => {
       if (a.pinned && !b.pinned) return -1;
       if (!a.pinned && b.pinned) return 1;
@@ -63,6 +67,7 @@ function App() {
     setFilteredNotes(filtered);
   };
 
+  // Create new note
   const addNote = async () => {
     if (currentNote.text.trim() === "") return;
     
@@ -79,6 +84,7 @@ function App() {
     fetchNotes();
   };
 
+  // Quick note creation
   const addQuickNote = async () => {
     if (quickNote.trim() === "") return;
     
@@ -94,18 +100,21 @@ function App() {
     fetchNotes();
   };
 
+  // Delete note
   const deleteNote = async (id) => {
     const noteDoc = doc(db, "notes", id);
     await deleteDoc(noteDoc);
     fetchNotes();
   };
 
+  // Toggle pin note
   const togglePin = async (id, currentPinned) => {
     const noteDoc = doc(db, "notes", id);
     await updateDoc(noteDoc, { pinned: !currentPinned });
     fetchNotes();
   };
 
+  // Add folder
   const addFolder = async () => {
     if (newFolderName.trim() && !folders.includes(newFolderName)) {
       setFolders([...folders, newFolderName]);
@@ -114,6 +123,7 @@ function App() {
     }
   };
 
+  // Toggle tag on note (in modal)
   const toggleTag = (tag) => {
     if (currentNote.tags.includes(tag)) {
       setCurrentNote({
@@ -128,29 +138,33 @@ function App() {
     }
   };
 
-  // ✅ FIXED: Empty dependency array - runs only once when component mounts
+  // ✅ FIXED: Fetch notes on component mount only (runs once)
   useEffect(() => {
     fetchNotes();
-  }, []);
+  }, []); // Empty array - runs once when component loads
 
-  // Update filters when dependencies change
+  // Update filters when search, tag, folder, or notes change
   useEffect(() => {
     filterNotes(notes, searchTerm, selectedTag, selectedFolder);
   }, [searchTerm, selectedTag, selectedFolder, notes]);
 
   return (
     <div className="app">
+      {/* Background gradient */}
       <div className="background">
         <div className="gradient-bg"></div>
       </div>
 
+      {/* Main container */}
       <div className="container">
+        {/* Header */}
         <header className="header glass">
           <h1 className="title">
             <span className="title-icon">📝</span>
             Notes
           </h1>
           
+          {/* Search bar */}
           <div className="search-container">
             <span className="search-icon">🔍</span>
             <input
@@ -162,12 +176,14 @@ function App() {
             />
           </div>
           
+          {/* Create note button */}
           <button className="create-btn glass" onClick={() => setShowModal(true)}>
             <span className="btn-icon">+</span>
             New Note
           </button>
         </header>
 
+        {/* Quick note section */}
         <div className="quick-note-section glass">
           <h3 className="section-title">Quick Note</h3>
           <div className="quick-note-input">
@@ -182,7 +198,9 @@ function App() {
           </div>
         </div>
 
+        {/* Folders and tags navigation */}
         <div className="nav-section glass">
+          {/* Folders */}
           <div className="folders">
             <div className="nav-header">
               <span className="nav-icon">📁</span>
@@ -208,6 +226,7 @@ function App() {
             </div>
           </div>
 
+          {/* Tags */}
           <div className="tags">
             <div className="nav-header">
               <span className="nav-icon">🏷️</span>
@@ -227,6 +246,7 @@ function App() {
           </div>
         </div>
 
+        {/* Notes grid */}
         <div className="notes-grid">
           {filteredNotes.length === 0 ? (
             <div className="empty-state glass">
@@ -237,10 +257,15 @@ function App() {
             filteredNotes.map((note) => (
               <div key={note.id} className={`note-card glass ${note.pinned ? "pinned" : ""}`}>
                 <div className="card-header">
-                  <button className="pin-btn" onClick={() => togglePin(note.id, note.pinned)}>
+                  <button 
+                    className="pin-btn"
+                    onClick={() => togglePin(note.id, note.pinned)}
+                  >
                     {note.pinned ? "📌" : "📍"}
                   </button>
-                  <button className="delete-btn" onClick={() => deleteNote(note.id)}>🗑️</button>
+                  <button className="delete-btn" onClick={() => deleteNote(note.id)}>
+                    🗑️
+                  </button>
                 </div>
                 <p className="note-text">{note.text}</p>
                 <div className="card-footer">
@@ -249,7 +274,9 @@ function App() {
                       <span key={tag} className="note-tag">{tag}</span>
                     ))}
                   </div>
-                  <div className="folder-indicator">📁 {note.folder}</div>
+                  <div className="folder-indicator">
+                    📁 {note.folder}
+                  </div>
                 </div>
               </div>
             ))
@@ -257,16 +284,19 @@ function App() {
         </div>
       </div>
 
+      {/* Create Note Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal glass" onClick={(e) => e.stopPropagation()}>
             <h2 className="modal-title">Create New Note</h2>
+            
             <textarea
               placeholder="Write your note here..."
               value={currentNote.text}
               onChange={(e) => setCurrentNote({ ...currentNote, text: e.target.value })}
               className="note-textarea"
             />
+            
             <div className="modal-section">
               <label>Folder</label>
               <select
@@ -279,6 +309,7 @@ function App() {
                 ))}
               </select>
             </div>
+            
             <div className="modal-section">
               <label>Tags</label>
               <div className="tag-selector">
@@ -293,14 +324,20 @@ function App() {
                 ))}
               </div>
             </div>
+            
             <div className="modal-actions">
-              <button className="cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="save-btn" onClick={addNote}>Save Note</button>
+              <button className="cancel-btn" onClick={() => setShowModal(false)}>
+                Cancel
+              </button>
+              <button className="save-btn" onClick={addNote}>
+                Save Note
+              </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Add Folder Modal */}
       {showFolderModal && (
         <div className="modal-overlay" onClick={() => setShowFolderModal(false)}>
           <div className="modal glass" onClick={(e) => e.stopPropagation()}>
@@ -314,8 +351,12 @@ function App() {
               onKeyPress={(e) => e.key === 'Enter' && addFolder()}
             />
             <div className="modal-actions">
-              <button className="cancel-btn" onClick={() => setShowFolderModal(false)}>Cancel</button>
-              <button className="save-btn" onClick={addFolder}>Create Folder</button>
+              <button className="cancel-btn" onClick={() => setShowFolderModal(false)}>
+                Cancel
+              </button>
+              <button className="save-btn" onClick={addFolder}>
+                Create Folder
+              </button>
             </div>
           </div>
         </div>
