@@ -138,10 +138,10 @@ function App() {
     }
   };
 
-  // Fetch notes on component mount only (runs once)
+  // ✅ FIXED: Fetch notes on component mount only (runs once)
   useEffect(() => {
     fetchNotes();
-  }, []);
+  }, []); // Empty array - runs once when component loads
 
   // Update filters when search, tag, folder, or notes change
   useEffect(() => {
