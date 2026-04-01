@@ -133,6 +133,7 @@ function App() {
     fetchNotes();
   }, []);
 
+  // Update filters when dependencies change
   useEffect(() => {
     filterNotes(notes, searchTerm, selectedTag, selectedFolder);
   }, [searchTerm, selectedTag, selectedFolder, notes]);
